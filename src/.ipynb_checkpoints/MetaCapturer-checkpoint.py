@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QComboBox, QTextEdit, QPushButton, QDialog, 
                              QDialogButtonBox, QMessageBox)
 
-class MainWindow(QWidget):
+class MetaCapturer(QWidget):
     """
     This class covers the window that does the metadata capture.
     Ultimately it will take in the info from an SQLite DB and send added info to the ROC creator module.
@@ -16,15 +16,21 @@ class MainWindow(QWidget):
         layout = QVBoxLayout()
 
         ### Some sample input boxes:
-        research_group = NamedDropdownLayout("Research Group: ", ["Smith", "Kowalski", "Forgeron"])
-        layout.addLayout()
+        research_group = self.NamedDropdownLayout(name = "Research Group: ", combobox_inputs = ["Smith", "Kowalski", "Forgeron"])
+        layout.addLayout(research_group)
+
+
+        self.setLayout(layout)
+    
+        # Set some default size
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('MetaCapturer')
 
 
 
 
 
-
-    def NamedDropdownLayout(name, combobox_inputs):
+    def NamedDropdownLayout(self, name, combobox_inputs):
         """
         A named dropdown widget. Takes on a name of a combo box, a list of options, adds an empty option.
         """
@@ -36,3 +42,13 @@ class MainWindow(QWidget):
         hbox.addWidget(label)
         hbox.addWidget(dropdown)
         return hbox
+
+
+if __name__ == '__main__':
+    try:
+        app = QApplication(sys.argv)
+        ex = MetaCapturer()
+        ex.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        print(f"An error occurred: {e}")
