@@ -6,7 +6,7 @@
         "Operator:": ["Jane Smith", "John Doe"],
         "Observation Type:": ["ImageObject", "Dataset"],
         "Sensitivity:": ["Public repo", "Shareable", "Internal"],
-        "ROC": ["Project 1", "Project 2", "Method development"]
+        "ROC": ["project_1", "project_2", "method_development"]
         
     }
     

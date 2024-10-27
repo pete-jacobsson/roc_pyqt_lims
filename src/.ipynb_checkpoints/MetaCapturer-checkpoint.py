@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QDialogButtonBox, QMessageBox)
 
 import json
-with open("src/MetaCapturer_config.json", "r") as f:
+with open("src/MetaCapturer_config.json", "r") as f:  ### THIS WILL WANT TO BE ULTIMATELY REPLACED BY SOMETHING COMING DOWN THROUGH A LOGIN PAGE CONNECTED TO THE USER
     config = json.load(f)
     print(config)
 ### Custom widgets supporting the page-----------------------------------------
