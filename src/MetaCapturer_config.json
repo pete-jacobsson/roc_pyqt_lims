@@ -1,0 +1,7 @@
+{
+    "dropdowns": {
+        "Research Group:": ["Smith", "Kowalski", "Forgeron"],
+        "Sample ID:": ["Animal 1", "Mineral 2", "Vegetable 3"]
+    }
+    
+}
