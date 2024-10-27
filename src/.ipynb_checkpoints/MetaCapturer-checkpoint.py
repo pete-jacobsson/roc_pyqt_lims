@@ -35,30 +35,7 @@ class MetaCapturer(QWidget):
             hbox.addWidget(label)
             hbox.addWidget(dropdown)
             layout.addLayout(hbox)
-            self.dropdowns[key] = dropdown
-            
-
-        ### Some sample input boxes:  TODO: CONVERT TO A BUNCH OF STUFF LOADED FROM A JSON DICT!
-        # self.research_group = self.NamedDropdownLayout(name="Research Group: ", combobox_inputs=["Smith", "Kowalski", "Forgeron"])
-        # layout.addWidget(self.research_group)
-
-        # self.sample_identifier = self.NamedDropdownLayout(name="Sample ID: ", combobox_inputs=["Animal 1", "Mineral 2", "Vegetable 3"])
-        # layout.addWidget(self.sample_identifier)
-
-        # self.instrument = self.NamedDropdownLayout(name="Instrument ID: ", combobox_inputs=["SEM 1", "CT 2", "Mass Spec 3"])
-        # layout.addWidget(self.instrument)
-
-        # self.operator = self.NamedDropdownLayout(name="Operator: ", combobox_inputs=["Jane Smith", "John Doe"])
-        # layout.addWidget(self.operator)
-
-        # self.measurement_type = self.NamedDropdownLayout(name="Observation Type: ", combobox_inputs=["ImageObject", "Dataset"])
-        # layout.addWidget(self.measurement_type)
-
-        # self.sensitivity = self.NamedDropdownLayout(name="Sensitivity: ", combobox_inputs=["Public repo", "Shareable", "Internal"])
-        # layout.addWidget(self.sensitivity)
-
-        # self.roc = self.NamedDropdownLayout(name="Research Crate: ", combobox_inputs=["Project 1", "Project 2", "Method development"])
-        # layout.addWidget(self.roc)  
+            self.dropdowns[key] = dropdown             
 
         ### Comments box
         self.comments = QTextEdit()
@@ -68,7 +45,7 @@ class MetaCapturer(QWidget):
 
         ### Stage button
         self.stage_button = QPushButton("Stage")
-        # self.stage_button.clicked.connect(self.stage_dialog)
+        self.stage_button.clicked.connect(self.stage_dialog)
         layout.addWidget(self.stage_button)
         
 
@@ -80,7 +57,35 @@ class MetaCapturer(QWidget):
     def NamedDropdownLayout(self, name, combobox_inputs):
         return NamedDropdown(name, combobox_inputs)
 
+    
+    def stage_dialog(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Confirm ROC generation")
+        
+        layout = QVBoxLayout()
+        
+        for name, dropdown in self.dropdowns.items():
+            layout.addWidget(QLabel(f"{name}: {dropdown.currentText()}"))
+        
+        layout.addWidget(QLabel(f"Comments: {self.comments.toPlainText()}"))
+        
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(lambda: self.final_confirm(dialog))
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        
+        dialog.setLayout(layout)
+        dialog.exec()
 
+    
+    def final_confirm(self, dialog):
+        if any(dropdown.currentText() == "" for dropdown in self.dropdowns.values()):
+            QMessageBox.warning(self, "Warning", "All fields must be filled!")
+        else:
+            QMessageBox.information(self, "Success", "Information confirmed!")
+            dialog.accept()
 
 
 

@@ -1,7 +1,13 @@
 {
     "dropdowns": {
         "Research Group:": ["Smith", "Kowalski", "Forgeron"],
-        "Sample ID:": ["Animal 1", "Mineral 2", "Vegetable 3"]
+        "Sample ID:": ["Animal 1", "Mineral 2", "Vegetable 3"],
+        "Instrument ID:": ["SEM 1", "CT 2", "Mass Spec 3"],
+        "Operator:": ["Jane Smith", "John Doe"],
+        "Observation Type:": ["ImageObject", "Dataset"],
+        "Sensitivity:": ["Public repo", "Shareable", "Internal"],
+        "ROC": ["Project 1", "Project 2", "Method development"]
+        
     }
     
 }
