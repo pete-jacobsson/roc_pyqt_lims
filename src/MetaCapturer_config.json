@@ -1,13 +1,12 @@
 {
-    "dropdowns": {
-        "Research Group:": ["Smith", "Kowalski", "Forgeron"],
-        "Sample ID:": ["Animal 1", "Mineral 2", "Vegetable 3"],
-        "Instrument ID:": ["SEM 1", "CT 2", "Mass Spec 3"],
-        "Operator:": ["Jane Smith", "John Doe"],
-        "Observation Type:": ["ImageObject", "Dataset"],
-        "Sensitivity:": ["Public repo", "Shareable", "Internal"],
-        "ROC": ["project_1", "project_2", "method_development"]
-        
-    }
-    
+    "db_keys": "/home/pete/Documents/tests_and_vals/roc_pyqt_lims/db_keys.json",
+    "dropdown_inputs": [
+        ["rg_tab", "rg_name", "Research Group:"],
+        ["user_tab", "user_name", "Operator:"],
+        ["sample_tab", "sample_name", "Sample Identifier:"],
+        ["instrument_tab", "instrument_name", "Instrument:"],
+        ["instrument_tab", "observation_type", "Observation Type:"],
+        ["project_tab", "project_name", "Project:"]
+    ]
 }
+

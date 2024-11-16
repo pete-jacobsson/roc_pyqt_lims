@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, inspect, text
 
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QComboBox, QTextEdit, QPushButton, QDialog, 
-                             QDialogButtonBox, QMessageBox)
+                             QDialogButtonBox, QMessageBox, QCheckBox)
 
 import json
 with open("src/MetaCapturer_config.json", "r") as f:  ### THIS WILL WANT TO BE ULTIMATELY REPLACED BY SOMETHING COMING DOWN THROUGH A LOGIN PAGE CONNECTED TO THE USER
@@ -15,7 +15,7 @@ with open("src/MetaCapturer_config.json", "r") as f:  ### THIS WILL WANT TO BE U
 ### Custom functions, methods and widgets supporting the page-----------------------------------------
 
 
-def return_one_column(column, table, db_keys, dict_name = None):
+def return_one_column(db_keys, table, column):
     """
     This function searches a postgres DB using SQLAlchemy and returns a single column as a python dictionary.
     TODO: extend to allow filtering.
@@ -27,12 +27,9 @@ def return_one_column(column, table, db_keys, dict_name = None):
     - dict_name (str): name to be attributer to the dictionary, e.g. if it is "Sample", the dictionary returned by the function will be: {"Sample": [value_1, value_2, value_3]}
 
     Returns:
-    - dictionary: a dictionary containing of dictionary name and column values   
+    - list: a list of column values   
     
     """
-    # Set the end dict name
-    if dict_name is None:
-        dict_name = column
 
     # Get the leys
     with open(db_keys, "r") as f:
@@ -57,12 +54,28 @@ def return_one_column(column, table, db_keys, dict_name = None):
         for row in result.fetchall():
             values.append(row[0])
 
-    outcome_dict = {dict_name: values}
-    return outcome_dict
+    return values
 
 
-def collate_dropdowns()
+def collate_dropdowns(dropdown_inputs, db_keys):
+    """
+    This method runs the return_one_column method to generate dictionary inputs for creating dropdowns
+    
+    *Args:*
+    - dropdown_inputs(list): a list of lists containing inputs for the return_one_column ordered as (table, column, dict_name)
+    - db_keys (str): path to the db keys used by the return_one_column
 
+    *Returns*
+    - dictionary: a dictionary consisting of each of the lists returned by return_one_column (e.g. {"item1": ["value1", "value2"], "item2: ["value1", "value2"]}
+    """
+
+    dropdown_config = {}
+    
+    for dropdown_input in dropdown_inputs:
+        values = return_one_column(db_keys, dropdown_input[0], dropdown_input[1])
+        dropdown_config[dropdown_input[2]] = values
+
+    return dropdown_config
 
 
 
@@ -85,8 +98,9 @@ class MetaCapturer(QWidget):
         Initialize the MetaCapturer widget and its user interface.
         """
         super().__init__()
+        self.db_keys = config["db_keys"] ## Has to go before initUI
         self.initUI()
-        self.db_keys = config["db_keys"]
+
 
 
     
@@ -102,8 +116,10 @@ class MetaCapturer(QWidget):
         
         layout = QVBoxLayout()
 
-        dropdowns_to_print = config["dropdowns"]
+        dropdown_inputs = config["dropdown_inputs"]  # List of (table, column, dict_name) tuples
+        dropdowns_to_print = collate_dropdowns(dropdown_inputs, self.db_keys)
         print(dropdowns_to_print)
+        
         self.dropdowns = {}
         for key, value in dropdowns_to_print.items():
             hbox = QHBoxLayout()
@@ -116,13 +132,19 @@ class MetaCapturer(QWidget):
             layout.addLayout(hbox)
             self.dropdowns[key] = dropdown             
 
+
+
+        
         ### Comments box
         self.comments = QTextEdit()
-        layout.addWidget(QLabel("Comments"))
+        layout.addWidget(QLabel("Comments:"))
         layout.addWidget(self.comments)
 
+        ### "Sensitive data" as a tick box
+        self.sensitive_checkbox = QCheckBox("Sensitive Data")  # Set the label for the checkbox
+        self.sensitive_checkbox.setChecked(False)
+        layout.addWidget(self.sensitive_checkbox)
 
-        ### Re-introduce "Sensitive data" as a tick box
 
 
         ### Stage button
@@ -153,6 +175,9 @@ class MetaCapturer(QWidget):
             layout.addWidget(QLabel(f"{name}: {dropdown.currentText()}"))
         
         layout.addWidget(QLabel(f"Comments: {self.comments.toPlainText()}"))
+
+        sensitive_state = "Yes" if self.sensitive_checkbox.isChecked() else "No"
+        layout.addWidget(QLabel(f"Sensitive Data: {sensitive_state}"))
         
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

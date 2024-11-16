@@ -14,6 +14,9 @@ from MetaCapturer import MetaCapturer
 app = QApplication([])
 
 
+### Single fail on predicting population. 
+
+
 class TestMetaCapturer(unittest.TestCase):
     """
     Unit tests for the MetaCapturer class.
@@ -23,11 +26,33 @@ class TestMetaCapturer(unittest.TestCase):
         """
         Set up the MetaCapturer instance before each test.
         """
+        # Mock dropdown inputs and config
+        self.mock_dropdown_inputs = [
+            ("table1", "column1", "Dropdown1"),
+            ("table2", "column2", "Dropdown2"),
+        ]
+        self.mock_config = {
+            "db_keys": "mock_db_keys.json",
+            "dropdown_inputs": self.mock_dropdown_inputs,
+        }
+
+        # Mock dropdown results returned by collate_dropdowns
+        self.mock_dropdown_data = {
+            "Dropdown1": ["value1", "value2", "value3"],
+            "Dropdown2": ["valueA", "valueB", "valueC"],
+        }
+
+        # Patch the config and collate_dropdowns
+        patcher1 = patch("MetaCapturer.config", self.mock_config)
+        patcher2 = patch("MetaCapturer.collate_dropdowns", return_value=self.mock_dropdown_data)
+
+        self.mock_config_patch = patcher1.start()
+        self.mock_collate_patch = patcher2.start()
+        self.addCleanup(patcher1.stop)
+        self.addCleanup(patcher2.stop)
+
+        # Reinitialize the widget after patching
         self.widget = MetaCapturer()
-        # Load the config from the JSON file
-        config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/MetaCapturer_config.json'))
-        with open(config_path, "r") as f:
-            self.config = json.load(f)
 
     def tearDown(self):
         """
@@ -37,18 +62,21 @@ class TestMetaCapturer(unittest.TestCase):
 
     def test_dropdown_population(self):
         """
-        Test that dropdowns are populated with the correct items from the config.
+        Test that dropdowns are dynamically populated with the correct items.
         """
-        # Test if dropdowns were created for all keys in the config
-        expected_keys = list(self.widget.dropdowns.keys())
-        actual_keys = list(self.config["dropdowns"].keys())
+        # Verify dropdown keys match the dictionary keys from collate_dropdowns
+        expected_keys = list(self.mock_dropdown_data.keys())
+        actual_keys = list(self.widget.dropdowns.keys())
         self.assertListEqual(expected_keys, actual_keys)
 
-        # Test if each dropdown contains the correct items
+        # Verify dropdown items match the values from collate_dropdowns
         for key, dropdown in self.widget.dropdowns.items():
-            expected_items = [""] + self.config["dropdowns"][key]  # Include the empty option
+            expected_items = [""] + self.mock_dropdown_data[key]  # Include the empty option
             actual_items = [dropdown.itemText(i) for i in range(dropdown.count())]
             self.assertListEqual(expected_items, actual_items)
+
+        # Verify collate_dropdowns was called with the correct arguments
+        self.mock_collate_patch.assert_called_once_with(self.mock_dropdown_inputs, "mock_db_keys.json")
 
     def test_comments_section(self):
         """

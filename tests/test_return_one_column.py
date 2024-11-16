@@ -52,8 +52,7 @@ class TestReturnOneColumn(unittest.TestCase):
             result = return_one_column(
                 column=column_name,
                 table=table_name,
-                db_keys="mock_db_keys.json",
-                dict_name="Sample"
+                db_keys="mock_db_keys.json"
             )
             
             # Assertions
@@ -61,7 +60,7 @@ class TestReturnOneColumn(unittest.TestCase):
                 f"postgresql://{mock_db_keys['db_username']}:{mock_db_keys['db_password']}@{mock_db_keys['db_host']}:{mock_db_keys['db_port']}/{mock_db_keys['db_name']}"
             )
             # mock_connection.execute.assert_called_once_with(f"SELECT {column_name} FROM {table_name}")
-            self.assertEqual(result, {"Sample": ["value1", "value2", "value3"]})
+            self.assertEqual(result, ["value1", "value2", "value3"])
 
 if __name__ == "__main__":
     unittest.main()
