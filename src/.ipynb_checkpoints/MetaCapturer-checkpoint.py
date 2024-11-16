@@ -14,14 +14,31 @@ with open("src/MetaCapturer_config.json", "r") as f:  ### THIS WILL WANT TO BE U
 ### Visible Widget supporting the page-----------------------------------------
 class MetaCapturer(QWidget):
     """
-    This class covers the window that does the metadata capture.
-    Ultimately it will take in the info from an SQLite DB and send added info to the ROC creator module.
+    A PyQt6-based GUI application for capturing metadata.
+    
+    This widget represents the main interface for capturing metadata 
+    by selecting options from dropdown menus and adding comments. The 
+    information is displayed in a confirmation dialog before it is 
+    staged for further processing, such as sending to the ROC creator module.
     """
+    
     def __init__(self):
+        """
+        Initialize the MetaCapturer widget and its user interface.
+        """
         super().__init__()
         self.initUI()
 
     def initUI(self):
+        """
+        Set up the user interface layout and elements.
+
+        The UI includes:
+        - Dropdowns for metadata categories defined in the configuration file.
+        - A comments section for free-form input.
+        - A "Stage" button to confirm and stage the entered data.
+        """
+        
         layout = QVBoxLayout()
 
         dropdowns_to_print = config["dropdowns"]
@@ -59,6 +76,12 @@ class MetaCapturer(QWidget):
 
     
     def stage_dialog(self):
+        """
+        Display a dialog to confirm the staged metadata.
+
+        The dialog shows the selected values from dropdown menus and the
+        comments entered. The user can confirm or cancel the staging.
+        """
         dialog = QDialog(self)
         dialog.setWindowTitle("Confirm ROC generation")
         
@@ -81,6 +104,16 @@ class MetaCapturer(QWidget):
 
     
     def final_confirm(self, dialog):
+        """
+        Handle the final confirmation of staged metadata.
+
+        This method checks if all dropdown fields are filled and displays
+        an appropriate message. If all fields are valid, it confirms the staging.
+
+        Parameters:
+            dialog (QDialog): The dialog instance to close after confirmation.
+        """
+
         if any(dropdown.currentText() == "" for dropdown in self.dropdowns.values()):
             QMessageBox.warning(self, "Warning", "All fields must be filled!")
         else:
@@ -95,6 +128,10 @@ class MetaCapturer(QWidget):
 
 
 if __name__ == '__main__':
+    """
+    Entry point of the application. Initializes the QApplication and displays
+    the MetaCapturer widget.
+    """
     try:
         app = QApplication(sys.argv)
         ex = MetaCapturer()
