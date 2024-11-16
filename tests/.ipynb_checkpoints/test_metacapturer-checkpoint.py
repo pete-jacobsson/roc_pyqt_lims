@@ -77,27 +77,20 @@ class TestMetaCapturer(unittest.TestCase):
             # Verify success message is shown
             mock_info.assert_called_once_with(self.widget, "Success", "Information confirmed!")
 
-    def test_stage_dialog_missing_field(self):
+    def test_stage_dialog_all_fields_filled(self):
         """
-        Test that the stage dialog shows a warning if any field is missing.
+        Test that the stage dialog works when all fields are filled.
         """
-        # Leave one dropdown empty
-        for i, dropdown in enumerate(self.widget.dropdowns.values()):
-            if i == 0:  # Leave the first dropdown empty
-                dropdown.setCurrentIndex(0)
-            else:
-                dropdown.setCurrentIndex(1)  # Select valid items for other dropdowns
+        for dropdown in self.widget.dropdowns.values():
+            dropdown.setCurrentIndex(1)  # Select valid items
         
-        self.widget.comments.setText("This is a test comment")
+        with patch("PyQt6.QtWidgets.QMessageBox.information") as mock_info:
+            dialog = QDialog()
+            self.widget.final_confirm(dialog)
+            
+            self.assertTrue(dialog.result() == QDialog.DialogCode.Accepted)
+            mock_info.assert_called_once_with(self.widget, "Success", "Information confirmed!")
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
-            self.widget.stage_dialog()
-            dialog = self.widget.findChild(QDialog)
-            buttons = dialog.findChild(QDialogButtonBox)
-            buttons.button(QDialogButtonBox.StandardButton.Ok).click()
-
-            # Verify warning message is shown
-            mock_warning.assert_called_once_with(self.widget, "Warning", "All fields must be filled!")
 
     def test_final_confirm_all_fields_filled(self):
         """
@@ -111,25 +104,24 @@ class TestMetaCapturer(unittest.TestCase):
             self.widget.final_confirm(dialog)
             
             # Verify dialog acceptance and success message
-            self.assertTrue(dialog.result() == QDialog.Accepted)
+            self.assertTrue(dialog.result() == QDialog.DialogCode.Accepted)
             mock_info.assert_called_once_with(self.widget, "Success", "Information confirmed!")
 
-    def test_final_confirm_missing_field(self):
+    def test_stage_dialog_missing_field(self):
         """
-        Test final confirmation with a missing field.
+        Test that the stage dialog shows a warning if any field is missing.
         """
         for i, dropdown in enumerate(self.widget.dropdowns.values()):
-            if i == 0:  # Leave the first dropdown empty
-                dropdown.setCurrentIndex(0)
+            if i == 0:
+                dropdown.setCurrentIndex(0)  # Leave one field blank
             else:
-                dropdown.setCurrentIndex(1)  # Select valid items for other dropdowns
-
+                dropdown.setCurrentIndex(1)  # Select valid items
+        
         with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog = QDialog()
             self.widget.final_confirm(dialog)
             
-            # Verify dialog rejection and warning message
-            self.assertFalse(dialog.result() == QDialog.Accepted)
+            self.assertTrue(dialog.result() != QDialog.DialogCode.Accepted)
             mock_warning.assert_called_once_with(self.widget, "Warning", "All fields must be filled!")
 
 

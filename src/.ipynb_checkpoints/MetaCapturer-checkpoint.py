@@ -1,4 +1,8 @@
 import sys
+from sqlalchemy import create_engine, inspect, text
+
+
+
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QComboBox, QTextEdit, QPushButton, QDialog, 
                              QDialogButtonBox, QMessageBox)
@@ -6,8 +10,62 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
 import json
 with open("src/MetaCapturer_config.json", "r") as f:  ### THIS WILL WANT TO BE ULTIMATELY REPLACED BY SOMETHING COMING DOWN THROUGH A LOGIN PAGE CONNECTED TO THE USER
     config = json.load(f)
-    print(config)
-### Custom widgets supporting the page-----------------------------------------
+
+
+### Custom functions, methods and widgets supporting the page-----------------------------------------
+
+
+def return_one_column(column, table, db_keys, dict_name = None):
+    """
+    This function searches a postgres DB using SQLAlchemy and returns a single column as a python dictionary.
+    TODO: extend to allow filtering.
+
+    *Arguments*
+    - column (str): name of column to be selected
+    - table (str): name of the table to be selected
+    - db_keys (str): path to .json file containing the DB keys
+    - dict_name (str): name to be attributer to the dictionary, e.g. if it is "Sample", the dictionary returned by the function will be: {"Sample": [value_1, value_2, value_3]}
+
+    Returns:
+    - dictionary: a dictionary containing of dictionary name and column values   
+    
+    """
+    # Set the end dict name
+    if dict_name is None:
+        dict_name = column
+
+    # Get the leys
+    with open(db_keys, "r") as f:
+        keys_dict = json.load(f)
+
+    db_username = keys_dict["db_username"]
+    db_password = keys_dict["db_password"]
+    db_name = keys_dict["db_name"]
+    db_host = keys_dict["db_host"]
+    db_port = keys_dict["db_port"]
+
+    connection_string = f"postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
+    
+    engine = create_engine(connection_string)
+
+    query = text(f"SELECT {column} FROM {table};")
+
+    values = []
+    with engine.connect() as connection:
+        result = connection.execute(query)
+        # Extract the values from the result and return as a list
+        for row in result.fetchall():
+            values.append(row[0])
+
+    outcome_dict = {dict_name: values}
+    return outcome_dict
+
+
+def collate_dropdowns()
+
+
+
+
 
 
 
@@ -28,7 +86,10 @@ class MetaCapturer(QWidget):
         """
         super().__init__()
         self.initUI()
+        self.db_keys = config["db_keys"]
 
+
+    
     def initUI(self):
         """
         Set up the user interface layout and elements.
@@ -42,6 +103,7 @@ class MetaCapturer(QWidget):
         layout = QVBoxLayout()
 
         dropdowns_to_print = config["dropdowns"]
+        print(dropdowns_to_print)
         self.dropdowns = {}
         for key, value in dropdowns_to_print.items():
             hbox = QHBoxLayout()
@@ -60,6 +122,9 @@ class MetaCapturer(QWidget):
         layout.addWidget(self.comments)
 
 
+        ### Re-introduce "Sensitive data" as a tick box
+
+
         ### Stage button
         self.stage_button = QPushButton("Stage")
         self.stage_button.clicked.connect(self.stage_dialog)
@@ -70,9 +135,6 @@ class MetaCapturer(QWidget):
     
         # Set some default size
         self.setWindowTitle('MetaCapturer')
-
-    def NamedDropdownLayout(self, name, combobox_inputs):
-        return NamedDropdown(name, combobox_inputs)
 
     
     def stage_dialog(self):
@@ -118,7 +180,10 @@ class MetaCapturer(QWidget):
             QMessageBox.warning(self, "Warning", "All fields must be filled!")
         else:
             QMessageBox.information(self, "Success", "Information confirmed!")
-            dialog.accept()
+            dialog.done(QDialog.DialogCode.Accepted)
+
+
+
 
 
 
