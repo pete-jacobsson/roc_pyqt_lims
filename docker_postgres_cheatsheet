@@ -1,0 +1,21 @@
+### All in Ubuntu Command line:
+
+## Pull postgres from docker hub:
+docker pull postgres
+
+
+## Run the container. Map to 54321 in case 5432 occupied
+docker run --name pyqt_lims_db \
+  -e POSTGRES_PASSWORD=ThishappenstobeafairlylongconvolutedsecretforthepgdbforourprojectthatactuallydoesnotcontainanythingofvalueButthenaginwhynot? \
+  -v postgres_data:/var/lib/postgresql/data \
+  -p 54321:5432 \
+  -d postgres
+
+
+## Getting rid of the container
+docker rm pyqt_lims_db
+
+
+
+## Create the docker volume to get persistent data:
+docker volume create pyqt_lims_pd
