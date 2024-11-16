@@ -4,10 +4,14 @@
 docker pull postgres
 
 
+## Create the docker volume to get persistent data:
+docker volume create pyqt_lims_pd
+
+
 ## Run the container. Map to 54321 in case 5432 occupied
 docker run --name pyqt_lims_db \
-  -e POSTGRES_PASSWORD=ThishappenstobeafairlylongconvolutedsecretforthepgdbforourprojectthatactuallydoesnotcontainanythingofvalueButthenaginwhynot? \
-  -v postgres_data:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD= \
+  -v pyqt_lims_pd:/var/lib/postgresql/data \
   -p 54321:5432 \
   -d postgres
 
@@ -16,6 +20,10 @@ docker run --name pyqt_lims_db \
 docker rm pyqt_lims_db
 
 
+## Now you have a PostgreSQL container running with persistent storage. You can connect to it using any PostgreSQL client, including the command-line tool psql:
 
-## Create the docker volume to get persistent data:
-docker volume create pyqt_lims_pd
+docker exec -it pyqt_lims_db psql -U postgres
+
+
+
+###### Creating the pyqt_lims_devs user:
