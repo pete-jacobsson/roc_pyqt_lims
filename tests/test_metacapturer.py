@@ -153,5 +153,27 @@ class TestMetaCapturer(unittest.TestCase):
             mock_warning.assert_called_once_with(self.widget, "Warning", "All fields must be filled!")
 
 
+    # def test_move_files(self):
+    #     # Create temporary directories for source and destination
+    #     src_dir = tempfile.mkdtemp()
+    #     dst_dir = tempfile.mkdtemp()
+
+    #     # Create some sample files in the source directory
+    #     for i in range(1, 4):
+    #         with open(os.path.join(src_dir, f"file_{i}.txt"), "w") as f:
+    #             f.write(f"This is file {i}")
+
+    #     # Call the move_files method
+    #     self.widget.move_files(src_dir, dst_dir)
+
+    #     # Verify that all files were moved
+    #     self.assertEqual(len(os.listdir(src_dir)), 0)  # No files should remain in src_dir
+    #     self.assertEqual(len(os.listdir(dst_dir)), 3)  # All files should be in dst_dir
+
+    #     # Clean up the temporary directories
+    #     tempfile.rmtree(src_dir)
+    #     tempfile.rmtree(dst_dir)
+
+
 if __name__ == "__main__":
     unittest.main()

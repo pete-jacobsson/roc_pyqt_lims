@@ -120,11 +120,11 @@ class MetaCapturer(QWidget):
         dropdowns_to_print = collate_dropdowns(dropdown_inputs, self.db_keys)
         print(dropdowns_to_print)
 
-        # src_dir = config["src_dir"]
-        # dst_dir = config["dst_dir"]
+        src_dir = config["src_dir"]
+        dst_dir = config["dst_dir"]
 
-        print(src_dir)
-        print(dst_dir)
+        # print(src_dir)
+        # print(dst_dir)
         
         self.dropdowns = {}
         for key, value in dropdowns_to_print.items():
