@@ -7,6 +7,8 @@
         ["instrument_tab", "instrument_name", "Instrument:"],
         ["instrument_tab", "observation_type", "Observation Type:"],
         ["project_tab", "project_name", "Project:"]
-    ]
+    ],
+    "src_dir": "/home/pete/Documents/tests_and_vals/roc_pyqt_lims/from_instrument",
+    "dst_dir": "/home/pete/Documents/tests_and_vals/roc_pyqt_lims/general_dump"
 }
 
