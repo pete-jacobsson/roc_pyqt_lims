@@ -1,0 +1,13 @@
+{
+    "db_keys": "/home/pete/Documents/tests_and_vals/roc_pyqt_lims/db_keys.json",
+    "dropdown_inputs": [
+        ["rg_tab", "rg_name", "Research Group:"],
+        ["user_tab", "user_name", "Operator:"],
+        ["sample_tab", "sample_name", "Sample Identifier:"],
+        ["instrument_tab", "instrument_name", "Instrument:"],
+        ["instrument_tab", "observation_type", "Observation Type:"],
+        ["project_tab", "project_name", "Project:"]
+    ],
+    "src_dir": "/home/pete/Documents/tests_and_vals/roc_pyqt_lims/from_instrument",
+    "dst_dir": "/home/pete/Documents/tests_and_vals/roc_pyqt_lims/general_dump"
+}

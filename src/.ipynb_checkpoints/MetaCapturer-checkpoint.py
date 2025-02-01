@@ -1,4 +1,6 @@
 import sys
+import os
+import shutil
 from sqlalchemy import create_engine, inspect, text
 
 
@@ -99,6 +101,10 @@ class MetaCapturer(QWidget):
         """
         super().__init__()
         self.db_keys = config["db_keys"] ## Has to go before initUI
+        self.src_dir = config["src_dir"]
+        self.dst_dir = config["dst_dir"]
+        print(self.src_dir)
+        print(self.dst_dir)
         self.initUI()
 
 
@@ -164,6 +170,34 @@ class MetaCapturer(QWidget):
         # Set some default size
         self.setWindowTitle('MetaCapturer')
 
+
+    def move_files(self):
+        """
+        Move all files from the source directory to the destination directory.
+
+        This method is triggered when the user clicks 'OK' in the stage_dialog.
+        It iterates through all files in the source directory (self.src_dir) and
+        moves them to the destination directory (self.dst_dir).
+
+        If a file with the same name already exists in the destination directory,
+        it will be overwritten.
+
+        Raises:
+            OSError: If there are issues with file permissions or disk space.
+            shutil.Error: If there are errors during the file moving process.
+        """
+        try:
+            for filename in os.listdir(self.src_dir):
+                src_file = os.path.join(self.src_dir, filename)
+                dst_file = os.path.join(self.dst_dir, filename)
+                
+                if os.path.isfile(src_file):
+                    shutil.move(src_file, dst_file)
+            
+            QMessageBox.information(self, "Success", "All files have been moved successfully!")
+        except (OSError, shutil.Error) as e:
+            QMessageBox.critical(self, "Error", f"An error occurred while moving files: {str(e)}")
+
     
     def stage_dialog(self):
         """
@@ -193,7 +227,8 @@ class MetaCapturer(QWidget):
         layout.addWidget(buttons)
         
         dialog.setLayout(layout)
-        dialog.exec()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.move_files()  # Only move files if the dialog was accepted
 
     
     def final_confirm(self, dialog):
