@@ -1,6 +1,8 @@
 import sys
 import os
 import json
+import tempfile
+import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from MetaCapturer import MetaCapturer  # Now this import will work
@@ -167,7 +169,41 @@ class TestMetaCapturer(unittest.TestCase):
         for i in range(3):
             self.assertTrue(os.path.exists(os.path.join(self.test_config['dst_dir'], f'test_file_{i}.txt')))
 
-
+    def test_file_renaming(self):
+        """
+        Test that files are renamed correctly after moving.
+        """
+        # Create a temporary source directory
+        with tempfile.TemporaryDirectory() as temp_src_dir:
+            self.widget.src_dir = temp_src_dir
+            
+            # Create a temporary destination directory
+            with tempfile.TemporaryDirectory() as temp_dst_dir:
+                self.widget.dst_dir = temp_dst_dir
+                
+                # Create a test file
+                test_filename = "test_file.txt"
+                test_filepath = os.path.join(temp_src_dir, test_filename)
+                with open(test_filepath, 'w') as f:
+                    f.write("Test content")
+                
+                # Set creation time to a known value
+                test_creation_time = datetime.datetime(2023, 6, 15, 14, 30, 0).timestamp()
+                os.utime(test_filepath, (test_creation_time, test_creation_time))
+                
+                # Mock the naming requirements and dictionary
+                self.widget.naming_reqs = ["user", "instrument"]
+                self.widget.naming_dict = {"user": "john", "instrument": "microscope"}
+                
+                # Move and rename the file
+                self.widget.move_files()
+                
+                # Check if the file was renamed correctly
+                expected_filename = "20230615_143000_john_microscope.txt"
+                self.assertTrue(os.path.exists(os.path.join(temp_dst_dir, expected_filename)))
+                
+                # Check that the original file no longer exists in the source directory
+                self.assertFalse(os.path.exists(test_filepath))
 
 if __name__ == "__main__":
     unittest.main()

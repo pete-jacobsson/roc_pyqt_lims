@@ -84,6 +84,7 @@ def collate_dropdowns(dropdown_inputs, db_keys):
         values = return_one_column(db_keys, dropdown_input[0], dropdown_input[1])
         dropdown_config[dropdown_input[2]] = values
 
+    # print(dropdown_config)
     return dropdown_config
 
 
@@ -110,6 +111,7 @@ class MetaCapturer(QWidget):
         self.db_keys = config["db_keys"] ## Has to go before initUI
         self.src_dir = config["src_dir"]
         self.dst_dir = config["dst_dir"]
+        # self.renaming_convention = config["renaming_convention"]
         print(self.src_dir)
         print(self.dst_dir)
         self.initUI()
@@ -216,6 +218,42 @@ class MetaCapturer(QWidget):
             QMessageBox.critical(self, "Error", f"An error occurred while moving files: {str(e)}")
 
     
+    def rename_files(self):
+        """
+        Rename a file based on its creation time and user-defined naming requirements.
+    
+        This function generates a new filename for the given file. The new name consists of:
+        1. The file's creation timestamp in 'yyyymmdd_hhmmss' format.
+        2. Additional components as specified in the naming_reqs list, with values drawn from naming_dict.
+        3. The original file extension.
+    
+        The naming convention is configurable through the config file, allowing users to easily
+        customize the filename structure to their needs.
+    
+        Args:
+        filepath (str): The full path to the original file.
+        naming_reqs (list): A list of strings specifying additional components to include in the filename.
+                            These components are defined in the config file.
+        naming_dict (dict): A dictionary mapping naming requirement keys to their corresponding values.
+    
+        Returns:
+        str: The new filename, including the file extension.
+    
+        Example:
+        If filepath is '/path/to/image.jpg', naming_reqs is ['user', 'instrument'],
+        and naming_dict is {'user': 'john', 'instrument': 'microscope'},
+        the function might return '20230615_142230_john_microscope.jpg'.
+    
+        Note:
+        - The first component of the new filename will always be the file creation time.
+        - The function assumes that all keys in naming_reqs are present in naming_dict.
+        - The original file extension is preserved.
+        """
+        pass
+
+
+
+    
     def stage_dialog(self):
         """
         Display a dialog to confirm the staged metadata.
@@ -229,7 +267,7 @@ class MetaCapturer(QWidget):
         layout = QVBoxLayout()
         
         for name, dropdown in self.dropdowns.items():
-            layout.addWidget(QLabel(f"{name}: {dropdown.currentText()}"))
+            layout.addWidget(QLabel(f"{name} {dropdown.currentText()}"))
         
         layout.addWidget(QLabel(f"Comments: {self.comments.toPlainText()}"))
 
@@ -246,6 +284,7 @@ class MetaCapturer(QWidget):
         dialog.setLayout(layout)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.move_files()  # Only move files if the dialog was accepted
+            self.rename_files() # Rename files in the dst_dir after this gets triggered.
 
     
     def final_confirm(self, dialog):
