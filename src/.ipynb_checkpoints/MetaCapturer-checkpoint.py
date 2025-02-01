@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import hashlib
 from sqlalchemy import create_engine, inspect, text
 
 
@@ -16,6 +17,12 @@ with open("src/MetaCapturer_config.json", "r") as f:  ### THIS WILL WANT TO BE U
 
 ### Custom functions, methods and widgets supporting the page-----------------------------------------
 
+def calculate_checksum(file_path):
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 def return_one_column(db_keys, table, column):
     """
@@ -172,30 +179,40 @@ class MetaCapturer(QWidget):
 
 
     def move_files(self):
-        """
-        Move all files from the source directory to the destination directory.
-
-        This method is triggered when the user clicks 'OK' in the stage_dialog.
-        It iterates through all files in the source directory (self.src_dir) and
-        moves them to the destination directory (self.dst_dir).
-
-        If a file with the same name already exists in the destination directory,
-        it will be overwritten.
-
-        Raises:
-            OSError: If there are issues with file permissions or disk space.
-            shutil.Error: If there are errors during the file moving process.
-        """
         try:
             for filename in os.listdir(self.src_dir):
                 src_file = os.path.join(self.src_dir, filename)
                 dst_file = os.path.join(self.dst_dir, filename)
                 
                 if os.path.isfile(src_file):
-                    shutil.move(src_file, dst_file)
+                    # Calculate checksum of source file
+                    src_checksum = calculate_checksum(src_file)
+                    creation_time = os.path.getctime(src_file)
+                    
+                    # Copy the file, preserving as much metadata as possible
+                    shutil.copy2(src_file, dst_file)
+                    
+                    # Set the creation time on the destination file
+                    if os.name == 'nt':  # Windows -- Should be redundant if shipped with Docker :)
+                        import win32_setctime
+                        win32_setctime.setctime(dst_file, creation_time)
+                    else:  # Unix-like systems
+                        os.utime(dst_file, (creation_time, os.path.getmtime(dst_file)))
+                    
+                    # Calculate checksum of destination file
+                    dst_checksum = calculate_checksum(dst_file)
+                    
+                    # Compare checksums
+                    if src_checksum == dst_checksum:
+                        # Remove the original file only if checksums match
+                        os.remove(src_file)
+                    else:
+                        # If checksums don't match, remove the copied file and raise an error
+                        os.remove(dst_file)
+                        raise ValueError(f"Checksum mismatch for file: {filename}")
             
             QMessageBox.information(self, "Success", "All files have been moved successfully!")
-        except (OSError, shutil.Error) as e:
+        except (OSError, shutil.Error, ValueError) as e:
             QMessageBox.critical(self, "Error", f"An error occurred while moving files: {str(e)}")
 
     

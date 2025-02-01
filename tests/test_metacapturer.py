@@ -26,25 +26,19 @@ class TestMetaCapturer(unittest.TestCase):
         """
         Set up the MetaCapturer instance before each test.
         """
-        # Mock dropdown inputs and config
-        self.mock_dropdown_inputs = [
-            ("table1", "column1", "Dropdown1"),
-            ("table2", "column2", "Dropdown2"),
-        ]
-        self.mock_config = {
-            "db_keys": "mock_db_keys.json",
-            "dropdown_inputs": self.mock_dropdown_inputs,
-        }
+        # Load test configuration from JSON file
+        test_config_path = os.path.join(os.path.dirname(__file__), 'test_config.json')
+        with open(test_config_path, 'r') as config_file:
+            self.test_config = json.load(config_file)
 
-        # Mock dropdown results returned by collate_dropdowns
-        self.mock_dropdown_data = {
-            "Dropdown1": ["value1", "value2", "value3"],
-            "Dropdown2": ["valueA", "valueB", "valueC"],
-        }
+        # Mock the collate_dropdowns function
+        # We'll create a simple mock that returns a dictionary based on dropdown_inputs
+        def mock_collate_dropdowns(dropdown_inputs, db_keys):
+            return {item[2]: [f"value{i}" for i in range(1, 4)] for item in dropdown_inputs}
 
         # Patch the config and collate_dropdowns
-        patcher1 = patch("MetaCapturer.config", self.mock_config)
-        patcher2 = patch("MetaCapturer.collate_dropdowns", return_value=self.mock_dropdown_data)
+        patcher1 = patch("MetaCapturer.config", self.test_config)
+        patcher2 = patch("MetaCapturer.collate_dropdowns", side_effect=mock_collate_dropdowns)
 
         self.mock_config_patch = patcher1.start()
         self.mock_collate_patch = patcher2.start()
@@ -64,19 +58,22 @@ class TestMetaCapturer(unittest.TestCase):
         """
         Test that dropdowns are dynamically populated with the correct items.
         """
-        # Verify dropdown keys match the dictionary keys from collate_dropdowns
-        expected_keys = list(self.mock_dropdown_data.keys())
+        # Get the expected dropdown keys from the test_config
+        expected_keys = [item[2] for item in self.test_config['dropdown_inputs']]
         actual_keys = list(self.widget.dropdowns.keys())
         self.assertListEqual(expected_keys, actual_keys)
-
-        # Verify dropdown items match the values from collate_dropdowns
+    
+        # Verify dropdown items match the values from our mock collate_dropdowns
         for key, dropdown in self.widget.dropdowns.items():
-            expected_items = [""] + self.mock_dropdown_data[key]  # Include the empty option
+            expected_items = [""] + [f"value{i}" for i in range(1, 4)]  # Include the empty option
             actual_items = [dropdown.itemText(i) for i in range(dropdown.count())]
             self.assertListEqual(expected_items, actual_items)
-
+    
         # Verify collate_dropdowns was called with the correct arguments
-        self.mock_collate_patch.assert_called_once_with(self.mock_dropdown_inputs, "mock_db_keys.json")
+        self.mock_collate_patch.assert_called_once_with(
+            self.test_config['dropdown_inputs'],
+            self.test_config['db_keys']
+        )
 
     def test_comments_section(self):
         """
@@ -153,26 +150,23 @@ class TestMetaCapturer(unittest.TestCase):
             mock_warning.assert_called_once_with(self.widget, "Warning", "All fields must be filled!")
 
 
-    # def test_move_files(self):
-    #     # Create temporary directories for source and destination
-    #     src_dir = tempfile.mkdtemp()
-    #     dst_dir = tempfile.mkdtemp()
+    def test_src_and_dst_dirs(self):
+        self.assertEqual(self.widget.src_dir, self.test_config['src_dir'])
+        self.assertEqual(self.widget.dst_dir, self.test_config['dst_dir'])
 
-    #     # Create some sample files in the source directory
-    #     for i in range(1, 4):
-    #         with open(os.path.join(src_dir, f"file_{i}.txt"), "w") as f:
-    #             f.write(f"This is file {i}")
+    
+    def test_move_files(self):
+        # Create some test files in the src_dir
+        for i in range(3):
+            with open(os.path.join(self.test_config['src_dir'], f'test_file_{i}.txt'), 'w') as f:
+                f.write(f'Test content {i}')
+    
+        self.widget.move_files()
+    
+        # Check that files have been moved to dst_dir
+        for i in range(3):
+            self.assertTrue(os.path.exists(os.path.join(self.test_config['dst_dir'], f'test_file_{i}.txt')))
 
-    #     # Call the move_files method
-    #     self.widget.move_files(src_dir, dst_dir)
-
-    #     # Verify that all files were moved
-    #     self.assertEqual(len(os.listdir(src_dir)), 0)  # No files should remain in src_dir
-    #     self.assertEqual(len(os.listdir(dst_dir)), 3)  # All files should be in dst_dir
-
-    #     # Clean up the temporary directories
-    #     tempfile.rmtree(src_dir)
-    #     tempfile.rmtree(dst_dir)
 
 
 if __name__ == "__main__":
